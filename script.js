@@ -1,5 +1,4 @@
 function fadeIn(element, duration, callback) {
-    element.style.display = 'block';
     element.style.opacity = 0;
     let startTime = performance.now();
 
@@ -31,7 +30,6 @@ function fadeOut(element, duration, callback) {
         if (progress < 1) {
             requestAnimationFrame(animate);
         } else {
-            element.style.display = 'none';
             if (callback) {
                 callback();
             }
@@ -45,11 +43,15 @@ document.addEventListener('DOMContentLoaded', function() {
     let greeting1 = document.getElementById('greeting1');
     let greeting2 = document.getElementById('greeting2');
 
-    fadeIn(greeting1, 1000, function() {
-        fadeOut(greeting1, 1000, function() {
-            fadeIn(greeting2, 1000, function() {
-                fadeOut(greeting2, 1000);
+    fadeIn(greeting1, 2000, function() {
+        setTimeout(function() {
+            fadeOut(greeting1, 2000, function() {
+                fadeIn(greeting2, 2000, function() {
+                    setTimeout(function() {
+                        fadeOut(greeting2, 2000);
+                    }, 2000); // Wait for 2 seconds after showing greeting2
+                });
             });
-        });
+        }, 2000); // Wait for 2 seconds after showing greeting1
     });
 });
