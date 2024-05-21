@@ -65,10 +65,14 @@ function animateBackgroundColorChange(element, startColor, endColor, duration) {
     requestAnimationFrame(animate);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    let greeting1 = document.getElementById('greeting1');
-    let greeting2 = document.getElementById('greeting2');
-    let container = document.getElementById('container');
+document.addEventListener('DOMContentLoaded', function () {
+    const greeting1 = document.getElementById('greeting1');
+    const greeting2 = document.getElementById('greeting2');
+    const container = document.querySelector('.container');
+    const socials = document.getElementById('socials');
+
+    socials.style.opacity = 0;
+    socials.classList.add('hidden');
 
     fadeIn(greeting1, 1400, function () {
         fadeOut(greeting1, 1400, function () {
@@ -79,4 +83,49 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+
+    function fadeIn(element, duration, callback) {
+        element.style.display = 'block';
+        element.style.opacity = 0;
+        let startTime = null;
+
+        function fade() {
+            if (startTime === null) {
+                startTime = performance.now();
+            }
+
+            const progress = (performance.now() - startTime) / duration;
+            element.style.opacity = Math.min(progress, 1);
+
+            if (progress < 1) {
+                requestAnimationFrame(fade);
+            } else {
+                callback();
+            }
+        }
+
+        requestAnimationFrame(fade);
+    }
+
+    function fadeOut(element, duration, callback) {
+        let startTime = null;
+
+        function fade() {
+            if (startTime === null) {
+                startTime = performance.now();
+            }
+
+            const progress = (performance.now() - startTime) / duration;
+            element.style.opacity = 1 - Math.min(progress, 1);
+
+            if (progress < 1) {
+                requestAnimationFrame(fade);
+            } else {
+                element.style.display = 'none';
+                callback();
+            }
+        }
+
+        requestAnimationFrame(fade);
+    }
 });
