@@ -1,5 +1,6 @@
 function fadeIn(element, duration, callback) {
     element.style.opacity = 0;
+    element.style.display = 'block';
     let startTime = performance.now();
 
     function animate() {
@@ -30,6 +31,7 @@ function fadeOut(element, duration, callback) {
         if (progress < 1) {
             requestAnimationFrame(animate);
         } else {
+            element.style.display = 'none';
             if (callback) {
                 callback();
             }
@@ -39,23 +41,16 @@ function fadeOut(element, duration, callback) {
     requestAnimationFrame(animate);
 }
 
-function animateBackgroundColorChange(element, startColor, endColor, duration) {
-    let startTime = performance.now();
-    let startR = parseInt(startColor.substring(1, 3), 16);
-    let startG = parseInt(startColor.substring(3, 5), 16);
-    let startB = parseInt(startColor.substring(5, 7), 16);
-    let endR = parseInt(endColor.substring(1, 3), 16);
-    let endG = parseInt(endColor.substring(3, 5), 16);
-    let endB = parseInt(endColor.substring(5, 7), 16);
+function animateBackgroundColorChange(element, fromColor, toColor, duration) {
+    let startTime = null;
 
     function animate() {
-        let currentTime = performance.now();
-        let elapsedTime = currentTime - startTime;
-        let progress = Math.min(elapsedTime / duration, 1);
-        let currentR = Math.round(startR + (endR - startR) * progress);
-        let currentG = Math.round(startG + (endG - startG) * progress);
-        let currentB = Math.round(startB + (endB - startB) * progress);
-        element.style.backgroundColor = `rgb(${currentR}, ${currentG}, ${currentB})`;
+        if (startTime === null) {
+            startTime = performance.now();
+        }
+
+        const progress = (performance.now() - startTime) / duration;
+        element.style.backgroundColor = interpolateColor(fromColor, toColor, progress);
 
         if (progress < 1) {
             requestAnimationFrame(animate);
@@ -65,14 +60,32 @@ function animateBackgroundColorChange(element, startColor, endColor, duration) {
     requestAnimationFrame(animate);
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    const greeting1 = document.getElementById('greeting1');
-    const greeting2 = document.getElementById('greeting2');
-    const container = document.querySelector('.container');
-    const socials = document.getElementById('socials');
+function interpolateColor(fromColor, toColor, progress) {
+    const fromRGB = hexToRGB(fromColor);
+    const toRGB = hexToRGB(toColor);
 
-    socials.style.opacity = 0;
-    socials.classList.add('hidden');
+    const resultRGB = [];
+    for (let i = 0; i < 3; i++) {
+        resultRGB[i] = Math.round(fromRGB[i] + (toRGB[i] - fromRGB[i]) * progress);
+    }
+
+    return `rgb(${resultRGB.join(',')})`;
+}
+
+function hexToRGB(hexColor) {
+    const hex = hexColor.slice(1);
+    const bigint = parseInt(hex, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+
+    return [r, g, b];
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    let greeting1 = document.getElementById('greeting1');
+    let greeting2 = document.getElementById('greeting2');
+    let container = document.getElementById('container');
 
     fadeIn(greeting1, 1400, function () {
         fadeOut(greeting1, 1400, function () {
@@ -83,49 +96,4 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     });
-
-    function fadeIn(element, duration, callback) {
-        element.style.display = 'block';
-        element.style.opacity = 0;
-        let startTime = null;
-
-        function fade() {
-            if (startTime === null) {
-                startTime = performance.now();
-            }
-
-            const progress = (performance.now() - startTime) / duration;
-            element.style.opacity = Math.min(progress, 1);
-
-            if (progress < 1) {
-                requestAnimationFrame(fade);
-            } else {
-                callback();
-            }
-        }
-
-        requestAnimationFrame(fade);
-    }
-
-    function fadeOut(element, duration, callback) {
-        let startTime = null;
-
-        function fade() {
-            if (startTime === null) {
-                startTime = performance.now();
-            }
-
-            const progress = (performance.now() - startTime) / duration;
-            element.style.opacity = 1 - Math.min(progress, 1);
-
-            if (progress < 1) {
-                requestAnimationFrame(fade);
-            } else {
-                element.style.display = 'none';
-                callback();
-            }
-        }
-
-        requestAnimationFrame(fade);
-    }
 });
