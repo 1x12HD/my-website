@@ -1,175 +1,99 @@
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300&display=swap');
+function fadeIn(element, duration, callback) {
+    element.style.opacity = 0;
+    element.style.display = 'block';
+    let startTime = performance.now();
 
-html {
-    min-height: 100%;
-}
+    function animate() {
+        let currentTime = performance.now();
+        let elapsedTime = currentTime - startTime;
+        let progress = Math.min(elapsedTime / duration, 1);
+        element.style.opacity = progress;
 
-body {
-    box-sizing: border-box;
-    height: 100%;
-    margin: 0;
-    overflow: hidden;
-    font-family: 'Inconsolata', Helvetica, sans-serif;
-    font-size: 1.5rem;
-    color: rgba(128, 255, 128, 0.8);
-    text-shadow: 0 0 1ex rgba(51, 255, 51, 1), 0 0 2px rgba(255, 255, 255, 0.8);
-}
-
-video {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    min-width: 100%;
-    min-height: 100%;
-    width: auto;
-    height: auto;
-    z-index: -1;
-    transform: translate(-50%, -50%);
-    filter: brightness(50%);
-    opacity: 0;
-    animation: fadeInVideo 2s forwards;
-}
-
-.overlay {
-    pointer-events: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: repeating-linear-gradient(180deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0) 100%);
-    background-size: auto 4px;
-    z-index: 999;
-    opacity: 1;
-    animation: fadeOutOverlay 2s forwards;
-}
-
-.terminal {
-    box-sizing: inherit;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 4rem;
-    text-transform: uppercase;
-    z-index: 1000;
-    opacity: 0;
-    animation: fadeInTerminal 2s 2s forwards;
-}
-
-.output {
-    color: rgba(128, 255, 128, 0.8);
-    text-shadow: 0 0 1px rgba(51, 255, 51, 0.4), 0 0 2px rgba(255, 255, 255, 0.8);
-}
-
-.output::before {
-    content: "> ";
-}
-
-a {
-    color: #fff;
-    text-decoration: none;
-}
-
-a::before {
-    content: "[";
-}
-
-a::after {
-    content: "]";
-}
-
-.errorcode {
-    color: white;
-}
-
-.greeting {
-    display: none;
-    font-family: 'Quicksand', sans-serif;
-    font-size: 30px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-@keyframes fadeInTerminal {
-    from {
-        opacity: 0;
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        } else if (callback) {
+            callback();
+        }
     }
-    to {
-        opacity: 1;
+
+    requestAnimationFrame(animate);
+}
+
+function fadeOut(element, duration, callback) {
+    let startTime = performance.now();
+
+    function animate() {
+        let currentTime = performance.now();
+        let elapsedTime = currentTime - startTime;
+        let progress = Math.min(elapsedTime / duration, 1);
+        element.style.opacity = 1 - progress;
+
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        } else {
+            element.style.display = 'none';
+            if (callback) {
+                callback();
+            }
+        }
     }
+
+    requestAnimationFrame(animate);
 }
 
-@keyframes fadeOutOverlay {
-    from {
-        opacity: 1;
+function animateBackgroundColorChange(element, fromColor, toColor, duration) {
+    let startTime = null;
+
+    function animate() {
+        if (startTime === null) {
+            startTime = performance.now();
+        }
+
+        const progress = (performance.now() - startTime) / duration;
+        element.style.backgroundColor = interpolateColor(fromColor, toColor, progress);
+
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        }
     }
-    to {
-        opacity: 0;
+
+    requestAnimationFrame(animate);
+}
+
+function interpolateColor(fromColor, toColor, progress) {
+    const fromRGB = hexToRGB(fromColor);
+    const toRGB = hexToRGB(toColor);
+
+    const resultRGB = [];
+    for (let i = 0; i < 3; i++) {
+        resultRGB[i] = Math.round(fromRGB[i] + (toRGB[i] - fromRGB[i]) * progress);
     }
+
+    return `rgb(${resultRGB.join(',')})`;
 }
 
-@keyframes fadeInVideo {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+function hexToRGB(hexColor) {
+    const hex = hexColor.slice(1);
+    const bigint = parseInt(hex, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+
+    return [r, g, b];
 }
 
-.container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background-color: black;
-    color: white;
-}
+document.addEventListener('DOMContentLoaded', function() {
+    let greeting1 = document.getElementById('greeting1');
+    let greeting2 = document.getElementById('greeting2');
+    let container = document.getElementById('container');
 
-#greeting1, #greeting2 {
-    font-family: 'Quicksand', sans-serif;
-    font-size: 30px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: none;
-}
-
-#socials {
-    text-align: center;
-}
-
-h2 {
-    font-family: 'Quicksand', sans-serif;
-    font-size: 28px;
-    margin-bottom: 42px;
-}
-
-.social-container {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-}
-
-a {
-    font-family: 'Quicksand', sans-serif;
-    font-size: 28px;
-    padding: 14px 20px;
-    margin: 8px 0;
-    cursor: pointer;
-    background-color: transparent;
-    color: white;
-    border: hidden;
-    border-radius: 100px;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-a:hover {
-    background-color: #2c2c2c;
-    color: rgb(226, 111, 236);
-}
+    fadeIn(greeting1, 1400, function () {
+        fadeOut(greeting1, 1400, function () {
+            fadeIn(greeting2, 1400, function () {
+                fadeOut(greeting2, 1400, function () {
+                    animateBackgroundColorChange(container, 'black', '#121212', 800);
+                });
+            });
+        });
+    });
+});
